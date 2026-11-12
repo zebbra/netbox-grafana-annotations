@@ -1,0 +1,22 @@
+[project]
+name = "netbox-grafana-annotations"
+version = "0.1.0"
+description = "NetBox dashboard widget showing Grafana annotations, e.g. maintenance windows or a changelog"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = ["requests"]
+classifiers = ["Framework :: Django", "Programming Language :: Python :: 3"]
+
+[project.urls]
+Repository = "https://github.com/zebbra/netbox-grafana-annotations"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["netbox_grafana_annotations"]
+
+[tool.setuptools.package-data]
+netbox_grafana_annotations = ["templates/**/*.html"]

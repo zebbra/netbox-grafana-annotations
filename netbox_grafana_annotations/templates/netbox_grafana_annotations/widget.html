@@ -1,0 +1,43 @@
+{% load i18n %}
+{% if error %}
+  <span class="text-danger">
+    <i class="mdi mdi-alert"></i> {% trans "Could not fetch annotations from Grafana" %}: {{ error }}
+  </span>
+{% else %}
+  <div class="list-group list-group-flush">
+    {% for e in entries %}
+      <div class="list-group-item px-1 py-2">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          {% if e.url %}
+            <a href="{{ e.url }}" target="_blank" rel="noopener noreferrer" class="text-body fw-semibold">{{ e.title }}</a>
+          {% else %}
+            <span class="fw-semibold">{{ e.title }}</span>
+          {% endif %}
+          {% if e.active %}<span class="badge bg-orange text-white">{% trans "Ongoing" %}</span>{% endif %}
+        </div>
+        <div class="text-secondary small">
+          {% if e.end %}
+            {{ e.start|date:"SHORT_DATETIME_FORMAT" }} – {{ e.end|date:"SHORT_DATETIME_FORMAT" }}
+          {% else %}
+            {{ e.start|date:"SHORT_DATE_FORMAT" }}
+          {% endif %}
+          {% if show_tags %}
+            {% for t in e.tags %}<span class="badge text-bg-secondary ms-1">{{ t }}</span>{% endfor %}
+          {% endif %}
+        </div>
+        {% for line in e.details %}
+          <div class="small">{{ line }}</div>
+        {% endfor %}
+        {% if e.links %}
+          <div class="small">
+            {% for l in e.links %}<a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="list-group-item text-muted">
+        {% if mode == "upcoming" %}{% trans "Nothing scheduled" %}{% else %}{% trans "No entries" %}{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
