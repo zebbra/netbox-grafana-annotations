@@ -9,7 +9,7 @@ NetBox fetches the annotations server-side (the Grafana token never reaches the 
 ## Install
 
 ```sh
-pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.1.3
+pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.2.0
 ```
 
 ```python
@@ -66,12 +66,13 @@ Annotations written by automation can carry structured fields in `data`, which t
     "url": "https://grafana.example.com/d/maintenance/maintenance",
     "impact": "Short gaps in ACI metrics",
     "contact": "Jane Doe",
-    "jira": [{"key": "OPS-123", "url": "https://jira.example.com/browse/OPS-123"}]
+    "jira": ["[OPS-123](https://jira.example.com/browse/OPS-123)"],
+    "runbook": "https://wiki.example.com/runbook/aci"
   }
 }
 ```
 
-`summary` is shown as a grey line below the title. Every further field with a plain value or a list of plain values is listed as `Key: value` (`impact` and `contact` first, nested objects skipped), unless «Show fields» is off.
+`summary` is shown as a grey line below the title. Every further field with a plain value or a list of plain values is listed as `Key: value` (`impact` and `contact` first, nested objects skipped), unless «Show fields» is off. Markdown links (`[text](url)`) and bare URLs in values become links; relative ones are resolved against `grafana_public_url`.
 
 Only `http(s)` URLs are rendered as links.
 

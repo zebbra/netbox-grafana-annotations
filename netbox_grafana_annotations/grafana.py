@@ -46,7 +46,23 @@ def plain_lines(html):
     return [p for p in parts if p]
 
 
-RESERVED = {"title", "summary", "url", "jira"}
+RESERVED = {"title", "summary", "url"}
+_LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)|(https?://[^\s,]+)")
+
+
+def parts(text, base=None):
+    """Split text into [{"text", "url"}]: Markdown links and bare http(s) URLs become links."""
+    out, pos = [], 0
+    for m in _LINK.finditer(text):
+        if m.start() > pos:
+            out.append({"text": text[pos:m.start()], "url": None})
+        label, target, bare = m.groups()
+        url = safe_url(target or bare, base)
+        out.append({"text": label or bare, "url": url} if url else {"text": m.group(0), "url": None})
+        pos = m.end()
+    if pos < len(text):
+        out.append({"text": text[pos:], "url": None})
+    return out
 FIRST = ("impact", "contact")
 
 
@@ -61,14 +77,14 @@ def _scalar(value):
     return ""
 
 
-def fields(data):
-    """Further data fields as "Key: value" lines, impact and contact first, nested values skipped."""
+def fields(data, base=None):
+    """Further data fields as {"label", "parts"}, impact and contact first, nested values skipped."""
     keys = [k for k in FIRST if k in data] + sorted(k for k in data if k not in RESERVED and k not in FIRST)
     out = []
     for key in keys:
         value = _scalar(data[key])
         if value:
-            out.append(f"{key.replace('_', ' ').capitalize()}: {value}")
+            out.append({"label": key.replace("_", " ").capitalize(), "parts": parts(value, base)})
     return out
 
 
@@ -80,9 +96,9 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=(), show_fields=True)
     """
     Turn a Grafana annotation into a display entry.
 
-    Structured fields in annotation["data"] win (title, url, impact, contact,
-    jira: [{key, url}]); otherwise the first text line is the title and the
-    rest are details.
+    Structured fields in annotation["data"] win: title, summary, url and any
+    further plain field as "Key: value" (Markdown links and bare URLs become
+    links). Otherwise the first text line is the title and the rest are details.
     """
     data = annotation.get("data") or {}
     if not isinstance(data, dict):
@@ -92,9 +108,10 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=(), show_fields=True)
     title = data.get("title") or (lines[0] if lines else "")
     summary = data.get("summary") if isinstance(data.get("summary"), str) else ""
     if data.get("title"):
-        details = fields(data) if show_fields else []
+        details = fields(data, base_url) if show_fields else []
     else:
-        details = [line for line in lines[1:] if line != "Details" and " · " not in line]
+        details = [{"label": None, "parts": [{"text": line, "url": None}]}
+                   for line in lines[1:] if line != "Details" and " · " not in line]
 
     url = safe_url(data.get("url"), base_url)
     if not url and annotation.get("dashboardUID"):
@@ -102,11 +119,6 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=(), show_fields=True)
         if annotation.get("panelId"):
             path += f"?viewPanel={annotation['panelId']}"
         url = safe_url(path, base_url)
-
-    links = []
-    for item in data.get("jira") or []:
-        if isinstance(item, dict) and safe_url(item.get("url")):
-            links.append({"label": item.get("key") or item["url"], "url": item["url"]})
 
     start = annotation.get("time")
     end = annotation.get("timeEnd")
@@ -118,7 +130,6 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=(), show_fields=True)
         "summary": summary,
         "details": details,
         "url": url,
-        "links": links,
         "tags": [t for t in annotation.get("tags") or [] if t not in hide_tags],
         "start": _ts(start),
         "end": _ts(end),

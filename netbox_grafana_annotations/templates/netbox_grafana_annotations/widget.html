@@ -26,14 +26,9 @@
             {% for t in e.tags %}<span class="badge text-bg-secondary ms-1">{{ t }}</span>{% endfor %}
           {% endif %}
         </div>
-        {% for line in e.details %}
-          <div class="small">{{ line }}</div>
+        {% for d in e.details %}
+          <div class="small">{% if d.label %}{{ d.label }}: {% endif %}{% for p in d.parts %}{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener noreferrer">{{ p.text }}</a>{% else %}{{ p.text }}{% endif %}{% endfor %}</div>
         {% endfor %}
-        {% if e.links %}
-          <div class="small">
-            {% for l in e.links %}<a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
-          </div>
-        {% endif %}
       </div>
     {% empty %}
       <div class="list-group-item text-muted">
