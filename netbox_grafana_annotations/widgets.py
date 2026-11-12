@@ -37,6 +37,7 @@ class GrafanaAnnotationsWidget(DashboardWidget):
         "days": 30,
         "max_entries": 10,
         "show_tags": True,
+        "show_fields": True,
     }
     width = 4
     height = 4
@@ -64,6 +65,11 @@ class GrafanaAnnotationsWidget(DashboardWidget):
         )
         max_entries = forms.IntegerField(label=_("Max entries"), min_value=1, max_value=100)
         show_tags = forms.BooleanField(label=_("Show tags"), required=False)
+        show_fields = forms.BooleanField(
+            label=_("Show fields"),
+            required=False,
+            help_text=_("Further fields of the annotation data as key: value"),
+        )
 
     def render(self, request):
         return render_to_string(self.template_name, self.get_context())
@@ -86,7 +92,8 @@ class GrafanaAnnotationsWidget(DashboardWidget):
             return {"error": e}
 
         items = grafana.entries(
-            annotations, mode, now_ms, config["max_entries"], public_url, hide_tags=set(tags)
+            annotations, mode, now_ms, config["max_entries"], public_url,
+            hide_tags=set(tags), show_fields=config.get("show_fields", True),
         )
         return {
             "entries": items,

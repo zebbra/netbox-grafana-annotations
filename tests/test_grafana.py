@@ -25,6 +25,7 @@ def test_structured_data():
     }, NOW, BASE, hide_tags={"maintenance"})
     assert e["title"] == "ACI Exporter" and e["active"]
     assert e["details"] == ["Impact: Gaps", "Contact: Ops"]
+    assert e["summary"] == ""
     assert e["links"] == [{"label": "T-1", "url": "https://jira/T-1"}]
     assert e["tags"] == ["aci"]
 
@@ -52,3 +53,12 @@ def test_entries_order():
     a = [{"time": NOW + i, "text": str(i)} for i in (2, 1, 3)]
     assert [e["title"] for e in grafana.entries(a, grafana.UPCOMING, NOW, 2)] == ["1", "2"]
     assert [e["title"] for e in grafana.entries(a, grafana.RECENT, NOW, 2)] == ["3", "2"]
+
+
+def test_summary_and_extra_fields():
+    data = {"title": "t", "summary": "one line", "prio": "high", "owner": ["A", "B"],
+            "nested": {"x": 1}, "contact": "Ops", "on_call": True}
+    e = grafana.normalize({"time": NOW, "data": data}, NOW)
+    assert e["summary"] == "one line"
+    assert e["details"] == ["Contact: Ops", "On call: yes", "Owner: A, B", "Prio: high"]
+    assert grafana.normalize({"time": NOW, "data": data}, NOW, show_fields=False)["details"] == []

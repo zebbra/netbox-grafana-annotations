@@ -46,11 +46,37 @@ def plain_lines(html):
     return [p for p in parts if p]
 
 
+RESERVED = {"title", "summary", "url", "jira"}
+FIRST = ("impact", "contact")
+
+
+def _scalar(value):
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    if isinstance(value, (str, int, float)):
+        return str(value)
+    if isinstance(value, list):
+        parts = [str(v) for v in value if isinstance(v, (str, int, float)) and not isinstance(v, bool)]
+        return ", ".join(parts)
+    return ""
+
+
+def fields(data):
+    """Further data fields as "Key: value" lines, impact and contact first, nested values skipped."""
+    keys = [k for k in FIRST if k in data] + sorted(k for k in data if k not in RESERVED and k not in FIRST)
+    out = []
+    for key in keys:
+        value = _scalar(data[key])
+        if value:
+            out.append(f"{key.replace('_', ' ').capitalize()}: {value}")
+    return out
+
+
 def _ts(ms):
     return datetime.fromtimestamp(ms / 1000, tz=timezone.utc) if ms else None
 
 
-def normalize(annotation, now_ms, base_url=None, hide_tags=()):
+def normalize(annotation, now_ms, base_url=None, hide_tags=(), show_fields=True):
     """
     Turn a Grafana annotation into a display entry.
 
@@ -64,11 +90,9 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=()):
     lines = plain_lines(annotation.get("text"))
 
     title = data.get("title") or (lines[0] if lines else "")
+    summary = data.get("summary") if isinstance(data.get("summary"), str) else ""
     if data.get("title"):
-        details = []
-        for key, label in (("impact", "Impact"), ("contact", "Contact")):
-            if data.get(key):
-                details.append(f"{label}: {data[key]}")
+        details = fields(data) if show_fields else []
     else:
         details = [line for line in lines[1:] if line != "Details" and " · " not in line]
 
@@ -91,6 +115,7 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=()):
     return {
         "id": annotation.get("id"),
         "title": title,
+        "summary": summary,
         "details": details,
         "url": url,
         "links": links,
@@ -102,7 +127,7 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=()):
     }
 
 
-def entries(annotations, mode, now_ms, max_entries, base_url=None, hide_tags=()):
-    items = [normalize(a, now_ms, base_url, hide_tags) for a in annotations]
+def entries(annotations, mode, now_ms, max_entries, base_url=None, hide_tags=(), show_fields=True):
+    items = [normalize(a, now_ms, base_url, hide_tags, show_fields) for a in annotations]
     items.sort(key=lambda e: e["_start_ms"], reverse=(mode != UPCOMING))
     return items[:max_entries]

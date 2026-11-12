@@ -15,6 +15,7 @@
           {% endif %}
           {% if e.active %}<span class="badge bg-orange text-white">{% trans "Ongoing" %}</span>{% endif %}
         </div>
+        {% if e.summary %}<div class="text-secondary">{{ e.summary }}</div>{% endif %}
         <div class="text-secondary small">
           {% if e.end %}
             {{ e.start|date:"SHORT_DATETIME_FORMAT" }} – {{ e.end|date:"SHORT_DATETIME_FORMAT" }}

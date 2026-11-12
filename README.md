@@ -7,7 +7,7 @@ NetBox fetches the annotations server-side (the Grafana token never reaches the 
 ## Install
 
 ```sh
-pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.1.2
+pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.1.3
 ```
 
 ```python
@@ -44,7 +44,7 @@ Add «Grafana Annotations» on the NetBox dashboard and configure:
 - **Tags**: comma-separated; by default an annotation must carry all of them, «Match any tag» relaxes that
 - **Show**: «Upcoming and ongoing» (from now, oldest first, ongoing regions marked) or «Recent» (newest first)
 - **Days**: how far ahead or back to look
-- **Max entries**, **Show tags** (the filter tags themselves are never shown)
+- **Max entries**, **Show tags** (the filter tags themselves are never shown), **Show fields**
 
 ## Annotation format
 
@@ -60,6 +60,7 @@ Annotations written by automation can carry structured fields in `data`, which t
   "text": "<b>ACI exporter deployment</b><br>…",
   "data": {
     "title": "ACI exporter deployment",
+    "summary": "New exporter image with APIC fault metrics",
     "url": "https://grafana.example.com/d/maintenance/maintenance",
     "impact": "Short gaps in ACI metrics",
     "contact": "Jane Doe",
@@ -67,6 +68,8 @@ Annotations written by automation can carry structured fields in `data`, which t
   }
 }
 ```
+
+`summary` is shown as a grey line below the title. Every further field with a plain value or a list of plain values is listed as `Key: value` (`impact` and `contact` first, nested objects skipped), unless «Show fields» is off.
 
 Only `http(s)` URLs are rendered as links.
 
