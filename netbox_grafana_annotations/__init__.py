@@ -1,6 +1,6 @@
 from netbox.plugins import PluginConfig
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 class GrafanaAnnotationsConfig(PluginConfig):
@@ -8,6 +8,7 @@ class GrafanaAnnotationsConfig(PluginConfig):
     verbose_name = "Grafana Annotations"
     description = "Dashboard widget showing Grafana annotations, e.g. maintenance windows or a changelog"
     version = __version__
+    author = "Stefan Grosser"
     base_url = "grafana-annotations"
     min_version = "4.0.0"
     default_settings = {

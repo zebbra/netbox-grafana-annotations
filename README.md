@@ -7,7 +7,7 @@ NetBox fetches the annotations server-side (the Grafana token never reaches the 
 ## Install
 
 ```sh
-pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.1.0
+pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.1.1
 ```
 
 ```python
@@ -75,3 +75,7 @@ Only `http(s)` URLs are rendered as links.
 ```sh
 PYTHONPATH=. uvx pytest tests
 ```
+
+## License
+
+MIT

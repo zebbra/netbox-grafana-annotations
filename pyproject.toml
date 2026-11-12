@@ -1,14 +1,16 @@
 [project]
 name = "netbox-grafana-annotations"
-version = "0.1.0"
+version = "0.1.1"
 description = "NetBox dashboard widget showing Grafana annotations, e.g. maintenance windows or a changelog"
 readme = "README.md"
-license = "Apache-2.0"
+license = "MIT"
+authors = [{ name = "Stefan Grosser" }]
 requires-python = ">=3.10"
 dependencies = ["requests"]
 classifiers = ["Framework :: Django", "Programming Language :: Python :: 3"]
 
 [project.urls]
+Homepage = "https://github.com/zebbra/netbox-grafana-annotations"
 Repository = "https://github.com/zebbra/netbox-grafana-annotations"
 
 [build-system]
