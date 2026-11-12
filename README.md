@@ -2,6 +2,8 @@
 
 A NetBox dashboard widget that lists Grafana annotations filtered by tags: upcoming maintenance windows, a changelog, deployments, incidents.
 
+![Two widgets: planned maintenance and changelog](docs/screenshot.png)
+
 NetBox fetches the annotations server-side (the Grafana token never reaches the browser) and caches them briefly. Each widget has its own tags, so a dashboard can show «Maintenance» (upcoming) next to «Changelog» (recent).
 
 ## Install
