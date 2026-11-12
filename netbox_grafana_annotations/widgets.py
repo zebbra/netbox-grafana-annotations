@@ -102,8 +102,9 @@ class GrafanaAnnotationsWidget(DashboardWidget):
         if ttl and (cached := cache.get(key)) is not None:
             return cached
 
+        limit = config["max_entries"] if config["mode"] == grafana.RECENT else 100
         params = grafana.query_params(
-            tags, config.get("match_any"), config["mode"], config["days"], 1000, now_ms
+            tags, config.get("match_any"), config["mode"], config["days"], limit, now_ms
         )
         headers = {"Accept": "application/json", "User-Agent": f"NetBox/{settings.RELEASE.version}"}
         token = conf.get("token") or os.environ.get(conf.get("token_env", "GRAFANA_ANNOTATIONS_TOKEN"))

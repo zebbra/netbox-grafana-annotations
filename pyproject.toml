@@ -1,6 +1,6 @@
 [project]
 name = "netbox-grafana-annotations"
-version = "0.1.1"
+version = "0.1.2"
 description = "NetBox dashboard widget showing Grafana annotations, e.g. maintenance windows or a changelog"
 readme = "README.md"
 license = "MIT"
