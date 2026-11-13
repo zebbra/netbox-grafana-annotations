@@ -26,10 +26,9 @@ def data():
     G = "https://grafana.example.com"
     SD = "https://servicedesk.example.com/ticket"
     return [
-        # created by hand in Grafana: plain text, no data, attached to a dashboard panel
         {"id": 1, "time": day - 1 * D + 7 * H, "timeEnd": day - 1 * D + 9 * H, "tags": ["maintenance", "firewall"],
-         "dashboardUID": "firewalls", "panelId": 2,
-         "text": "Firewall cluster reboot\nNo impact expected (HA)", "data": {}},
+         "text": "Firewall cluster reboot",
+         "data": {"title": "Firewall cluster reboot", "impact": "No impact expected (HA)", "contact": "Security team", "url": f"{G}/d/maintenance"}},
         {"id": 2, "time": n - 1 * H, "timeEnd": n + 2 * H, "tags": ["maintenance", "metrics"],
          "text": "Metrics storage migration",
          "data": {"title": "Metrics storage migration", "summary": "Moving the time series database to new nodes.",
@@ -43,6 +42,10 @@ def data():
          "text": "Access points dropping clients",
          "data": {"title": "Access points dropping clients", "summary": "Clients on floor 3 lose the connection every few minutes.",
                   "status": "Investigating", "ticket": f"[INC0041872]({SD}/INC0041872)", "url": f"{G}/d/wifi"}},
+        # created by hand in Grafana: plain text, no data, attached to a dashboard panel
+        {"id": 23, "time": day - 1 * D + 14 * H, "timeEnd": day - 1 * D + 15 * H + 30 * 60_000,
+         "tags": ["incident", "tier3", "firewall"], "dashboardUID": "firewalls", "panelId": 2,
+         "text": "Firewall in conserve mode\nMemory exhausted, new sessions dropped until failover", "data": {}},
         {"id": 22, "time": day - 2 * D + 9 * H, "timeEnd": day - 2 * D + 15 * H, "tags": ["incident", "tier3", "wan"],
          "text": "Packet loss on WAN uplink",
          "data": {"title": "Packet loss on WAN uplink", "summary": "Carrier replaced a faulty line card.",

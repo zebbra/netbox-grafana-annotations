@@ -52,16 +52,16 @@ Add «Grafana Annotations» on the NetBox dashboard and configure:
 
 ## Annotation format
 
-**Created by hand in Grafana** (Ctrl+click on a graph, text and tags), the API returns something like:
+**Created by hand in Grafana**, e.g. an engineer marks an incident on a graph (Ctrl+click, text and tags), the API returns something like:
 
 ```json
 {
   "time": 1794812400000,
-  "timeEnd": 1794819600000,
-  "tags": ["maintenance", "firewall"],
+  "timeEnd": 1794817800000,
+  "tags": ["incident", "tier3", "firewall"],
   "dashboardUID": "firewalls",
   "panelId": 2,
-  "text": "Firewall cluster reboot\nNo impact expected (HA)",
+  "text": "Firewall in conserve mode\nMemory exhausted, new sessions dropped until failover",
   "data": {}
 }
 ```
@@ -94,7 +94,7 @@ The widget shows the first line as title, linked to the dashboard panel, and the
 
 ## Demo
 
-`dev/` runs NetBox with the plugin from this checkout and a mock Grafana with demo data relative to now (yesterday's, an ongoing and tomorrow's maintenance, a changelog, two incidents):
+`dev/` runs NetBox with the plugin from this checkout and a mock Grafana with demo data relative to now (yesterday's, an ongoing and tomorrow's maintenance, a changelog, incidents incl. one created by hand):
 
 ```sh
 cd dev && docker compose up -d
