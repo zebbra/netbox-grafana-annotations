@@ -4,14 +4,14 @@ NOW = 1_794_800_000_000
 BASE = "https://grafana.example.com"
 
 
-def test_query_params_upcoming():
-    p = dict(grafana.query_params(["maintenance"], False, grafana.UPCOMING, 14, 50, NOW))
-    assert p["from"] == NOW and p["to"] == NOW + 14 * grafana.DAY_MS
+def test_query_params_window():
+    p = dict(grafana.query_params(["maintenance"], False, 1, 14, 50, NOW))
+    assert p["from"] == NOW - grafana.DAY_MS and p["to"] == NOW + 14 * grafana.DAY_MS
     assert p["tags"] == "maintenance" and "matchAny" not in p
 
 
 def test_query_params_recent_multi_tag_any():
-    p = grafana.query_params(["a", "b"], True, grafana.RECENT, 7, 50, NOW)
+    p = grafana.query_params(["a", "b"], True, 7, 0, 50, NOW)
     assert ("tags", "a") in p and ("tags", "b") in p and ("matchAny", "true") in p
     assert dict(p)["to"] == NOW
 
@@ -50,9 +50,21 @@ def test_unsafe_urls_dropped():
 
 
 def test_entries_order():
-    a = [{"time": NOW + i, "text": str(i)} for i in (2, 1, 3)]
-    assert [e["title"] for e in grafana.entries(a, grafana.UPCOMING, NOW, 2)] == ["1", "2"]
-    assert [e["title"] for e in grafana.entries(a, grafana.RECENT, NOW, 2)] == ["3", "2"]
+    a = [
+        {"time": NOW - 5, "text": "past-old"},
+        {"time": NOW + 9, "text": "later"},
+        {"time": NOW - 1, "text": "past-new"},
+        {"time": NOW - 3, "timeEnd": NOW + 3, "text": "ongoing"},
+        {"time": NOW + 2, "text": "soon"},
+    ]
+    assert [e["title"] for e in grafana.entries(a, NOW, 10)] == ["ongoing", "soon", "later", "past-new", "past-old"]
+    assert [e["title"] for e in grafana.entries(a, NOW, 2)] == ["ongoing", "soon"]
+
+
+def test_window_compat():
+    assert grafana.window({"days_back": 3, "days_ahead": 0}) == (3, 0)
+    assert grafana.window({"mode": "upcoming", "days": 14}) == (0, 14)
+    assert grafana.window({"mode": "recent", "days": 30}) == (30, 0)
 
 
 def test_summary_and_extra_fields():

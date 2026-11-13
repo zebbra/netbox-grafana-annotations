@@ -3,21 +3,23 @@ from datetime import datetime, timezone
 from html import unescape
 from urllib.parse import urljoin, urlparse
 
-UPCOMING = "upcoming"
-RECENT = "recent"
-
 DAY_MS = 86_400_000
 
 _BR = re.compile(r"<br\s*/?>|\n", re.IGNORECASE)
 _TAG = re.compile(r"<[^>]*>")
 
 
-def query_params(tags, match_any, mode, days, limit, now_ms):
+def window(config):
+    """(days_back, days_ahead) from a widget config, mapping the pre-0.3 mode/days."""
+    if "days_back" in config or "days_ahead" in config:
+        return int(config.get("days_back") or 0), int(config.get("days_ahead") or 0)
+    days = int(config.get("days") or 30)
+    return (0, days) if config.get("mode") == "upcoming" else (days, 0)
+
+
+def query_params(tags, match_any, days_back, days_ahead, limit, now_ms):
     """Query string for GET /api/annotations as a list of pairs."""
-    if mode == UPCOMING:
-        start, end = now_ms, now_ms + days * DAY_MS
-    else:
-        start, end = now_ms - days * DAY_MS, now_ms
+    start, end = now_ms - days_back * DAY_MS, now_ms + days_ahead * DAY_MS
     params = [("type", "annotation"), ("from", start), ("to", end), ("limit", limit)]
     params += [("tags", t) for t in tags]
     if match_any:
@@ -134,11 +136,22 @@ def normalize(annotation, now_ms, base_url=None, hide_tags=(), show_fields=True)
         "start": _ts(start),
         "end": _ts(end),
         "active": bool(end and start <= now_ms < end),
+        "past": bool((end or start or 0) <= now_ms),
         "_start_ms": start or 0,
     }
 
 
-def entries(annotations, mode, now_ms, max_entries, base_url=None, hide_tags=(), show_fields=True):
+def _order(entry, now_ms):
+    """Ongoing first, then upcoming (soonest first), then past (newest first)."""
+    start = entry["_start_ms"]
+    if entry["active"]:
+        return (0, -start)
+    if start > now_ms:
+        return (1, start)
+    return (2, -start)
+
+
+def entries(annotations, now_ms, max_entries, base_url=None, hide_tags=(), show_fields=True):
     items = [normalize(a, now_ms, base_url, hide_tags, show_fields) for a in annotations]
-    items.sort(key=lambda e: e["_start_ms"], reverse=(mode != UPCOMING))
+    items.sort(key=lambda e: _order(e, now_ms))
     return items[:max_entries]

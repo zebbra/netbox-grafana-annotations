@@ -2,14 +2,14 @@
 
 A NetBox dashboard widget that lists Grafana annotations filtered by tags: upcoming maintenance windows, a changelog, deployments, incidents.
 
-![Two widgets: planned maintenance and changelog](docs/screenshot.png)
+![Widgets for maintenance, changelog and incidents](docs/screenshot.png)
 
-NetBox fetches the annotations server-side (the Grafana token never reaches the browser) and caches them briefly. Each widget has its own tags, so a dashboard can show «Maintenance» (upcoming) next to «Changelog» (recent).
+NetBox fetches the annotations server-side (the Grafana token never reaches the browser) and caches them briefly. Each widget has its own tags and time window, so a dashboard can show upcoming maintenance next to a changelog and current incidents.
 
 ## Install
 
 ```sh
-pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.2.0
+pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.3.0
 ```
 
 ```python
@@ -43,9 +43,11 @@ Create a service account with role **Viewer** and a token for it. Viewer can rea
 
 Add «Grafana Annotations» on the NetBox dashboard and configure:
 
+<img src="docs/config.png" alt="Widget configuration" width="420">
+
 - **Tags**: comma-separated; by default an annotation must carry all of them, «Match any tag» relaxes that
-- **Show**: «Upcoming and ongoing» (from now, oldest first, ongoing regions marked) or «Recent» (newest first)
-- **Days**: how far ahead or back to look
+- **Days back** / **Days ahead**: time window around now; e.g. 0/14 for upcoming maintenance, 30/0 for a changelog, 1/14 to keep yesterday's window visible. Ongoing entries come first, then upcoming (soonest first), then past (newest first, dimmed when the window also looks ahead)
+- **Hint**: optional text shown when hovering the info icon, e.g. what the widget lists
 - **Max entries**, **Show tags** (the filter tags themselves are never shown), **Show fields**
 
 ## Annotation format
