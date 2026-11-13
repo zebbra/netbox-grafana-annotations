@@ -52,9 +52,23 @@ Add «Grafana Annotations» on the NetBox dashboard and configure:
 
 ## Annotation format
 
-Any annotation works: the first line of its text becomes the title, further lines become details, HTML is stripped. Links point to the annotation's dashboard and panel if it has one.
+**Created by hand in Grafana** (Ctrl+click on a graph, text and tags), the API returns something like:
 
-Annotations written by automation can carry structured fields in `data`, which take precedence:
+```json
+{
+  "time": 1794812400000,
+  "timeEnd": 1794819600000,
+  "tags": ["maintenance", "firewall"],
+  "dashboardUID": "firewalls",
+  "panelId": 2,
+  "text": "Firewall cluster reboot\nNo impact expected (HA)",
+  "data": {}
+}
+```
+
+The widget shows the first line as title, linked to the dashboard panel, and the following lines as details. HTML in the text is stripped.
+
+**Written by automation**, an annotation can carry structured fields in `data`, which take precedence:
 
 ```json
 {
@@ -74,9 +88,19 @@ Annotations written by automation can carry structured fields in `data`, which t
 }
 ```
 
-`summary` is shown as a grey line below the title. Every further field with a plain value or a list of plain values is listed as `Key: value` (`impact` and `contact` first, nested objects skipped), unless «Show fields» is off. Markdown links (`[text](url)`) and bare URLs in values become links; relative ones are resolved against `grafana_public_url`.
+`title` is the linked title (`url`), `summary` a grey line below it. Every further field with a plain value or a list of plain values is listed as `Key: value` (`impact` and `contact` first, nested objects skipped), unless «Show fields» is off. Markdown links (`[text](url)`) and bare URLs in values become links; relative ones are resolved against `grafana_public_url`. Only `http(s)` URLs are rendered as links.
 
-Only `http(s)` URLs are rendered as links.
+`text` stays what Grafana shows in its own tooltips. Writing `data` needs the HTTP API (`POST /api/annotations`), the Grafana UI only sets text and tags.
+
+## Demo
+
+`dev/` runs NetBox with the plugin from this checkout and a mock Grafana with demo data relative to now (yesterday's, an ongoing and tomorrow's maintenance, a changelog, two incidents):
+
+```sh
+cd dev && docker compose up -d
+```
+
+After a minute or two, http://localhost:8000 (login `admin` / `admin`) shows four example widgets. `NETBOX_PORT=8080 docker compose up -d` for another port, `docker compose down -v` to clean up. Plugin code changes: `docker compose restart netbox`.
 
 ## Development
 

@@ -1,0 +1,68 @@
+# Local demo: NetBox with the plugin from this checkout and a mock Grafana.
+#   docker compose up -d   →  http://localhost:8000  (admin / admin)
+x-netbox: &netbox
+  image: ghcr.io/netbox-community/netbox:${NETBOX_VERSION:-v4.6.5}
+  user: root
+  environment: &env
+    SECRET_KEY: demo-only-not-secret-0123456789abcdefghijklmnopqrstuvwxyz0123
+    DB_HOST: postgres
+    DB_NAME: netbox
+    DB_USER: netbox
+    DB_PASSWORD: netbox
+    REDIS_HOST: redis
+    REDIS_CACHE_HOST: redis
+    SUPERUSER_NAME: admin
+    SUPERUSER_PASSWORD: admin
+    SUPERUSER_EMAIL: admin@example.com
+  volumes:
+    - ..:/src:ro
+    - ./configuration.py:/etc/netbox/config/plugins.py:ro
+    - ./seed_dashboard.py:/demo/seed_dashboard.py:ro
+
+services:
+  netbox:
+    <<: *netbox
+    entrypoint:
+      - sh
+      - -c
+      - rm -rf /tmp/plugin && cp -r /src /tmp/plugin && rm -rf /tmp/plugin/dev
+        && /usr/local/bin/uv pip install -q --python /opt/netbox/venv/bin/python /tmp/plugin
+        && exec /opt/netbox/docker-entrypoint.sh /opt/netbox/launch-netbox.sh
+    ports:
+      - "${NETBOX_PORT:-8000}:8080"
+    depends_on: [postgres, redis, mock-grafana]
+    healthcheck:
+      test: curl -sf http://localhost:8080/login/ || exit 1
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 30
+
+  seed:
+    <<: *netbox
+    entrypoint:
+      - sh
+      - -c
+      - rm -rf /tmp/plugin && cp -r /src /tmp/plugin && rm -rf /tmp/plugin/dev
+        && /usr/local/bin/uv pip install -q --python /opt/netbox/venv/bin/python /tmp/plugin
+        && /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py shell < /demo/seed_dashboard.py
+    depends_on:
+      netbox:
+        condition: service_healthy
+    restart: "no"
+
+  mock-grafana:
+    image: python:3.12-alpine
+    command: python /mock/mock_grafana.py
+    volumes:
+      - ./mock_grafana.py:/mock/mock_grafana.py:ro
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: netbox
+      POSTGRES_USER: netbox
+      POSTGRES_PASSWORD: netbox
+
+  redis:
+    image: redis:7-alpine
