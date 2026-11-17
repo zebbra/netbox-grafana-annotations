@@ -1,3 +1,4 @@
+from django.template.loader import render_to_string
 from django.urls import reverse
 from netbox.plugins import PluginTemplateExtension
 
@@ -6,19 +7,25 @@ from .widgets import GrafanaAnnotationsWidget
 
 
 class PinnedFeeds(PluginTemplateExtension):
-    """Feeds from PLUGINS_CONFIG["pinned"], shown above every user's dashboard."""
+    """Message and feeds from PLUGINS_CONFIG, shown above every user's dashboard. Empty feeds are hidden."""
 
     def head(self):
-        request = self.context["request"]
-        cards = grafana.pinned_cards(self.context["config"].get("pinned"))
-        if not cards or request.path != reverse("home"):
+        config = self.context["config"]
+        if self.context["request"].path != reverse("home"):
             return ""
-        for card in cards:
+        cards = []
+        for card in grafana.pinned_cards(config.get("pinned")):
             widget = GrafanaAnnotationsWidget(
                 title=card["title"], config={**GrafanaAnnotationsWidget.default_config, **card["config"]},
             )
-            card["body"] = widget.render(request)
-        return self.render("netbox_grafana_annotations/pinned.html", {"cards": cards})
+            context = widget.get_context()
+            if context.get("error") or context.get("entries"):
+                card["body"] = render_to_string(widget.template_name, context)
+                cards.append(card)
+        message = config.get("pinned_message")
+        if not cards and not message:
+            return ""
+        return self.render("netbox_grafana_annotations/pinned.html", {"cards": cards, "message": message})
 
 
 template_extensions = [PinnedFeeds]

@@ -33,6 +33,7 @@ PLUGINS_CONFIG = {
 | `verify_ssl` | `True` | TLS verification for the API call |
 | `cache_timeout` | `300` | Cache lifetime in seconds, `0` disables caching |
 | `pinned` | `[]` | Feeds shown above every user's dashboard, see below |
+| `pinned_message` | – | Markdown text shown above the pinned feeds, e.g. a message of the day |
 
 Proxies follow NetBox's `HTTP_PROXIES`.
 
@@ -57,12 +58,16 @@ Feeds that every user should see, e.g. maintenance and incidents, can be pinned 
 
 ```python
 "pinned": [
-    {"title": "Planned work", "color": "purple", "width": 6, "tags": "maintenance", "days_ahead": 7},
-    {"title": "Incidents", "color": "red", "width": 6, "tags": "incident", "days_back": 5, "hint": "Current cases"},
+    {"title": "Planned work", "color": "purple", "tags": "maintenance", "days_back": 0, "days_ahead": 7},
+    {"title": "Incidents", "color": "red", "tags": "incident", "days_back": 5, "hint": "Current cases"},
+    {"title": "Preview", "color": "teal", "tags": "preview", "days_back": 0, "days_ahead": 0},
 ],
+"pinned_message": "**Release 4.6** on Monday, see [notes](https://wiki.example.com/release).",
 ```
 
-`title`, `color`, `width` (of 12 columns, default 4) and `height` (max height in units of 100px, default 4) shape the card; every other key is a widget setting as above (`tags`, `days_back`, `days_ahead`, `max_entries`, `hint`, …). NetBox has no hook for the home page, so the plugin adds the feeds via its `<head>` content and a few lines of JavaScript placed before `#dashboard`; if a NetBox release changes that element, the feeds just do not show.
+Feeds share one row in equal widths and are hidden while they have no entries. `title`, `color`, `width` (of 12 columns, overrides the equal split) and `height` (max height in units of 100px, default 4) shape the card; every other key is a widget setting as above (`tags`, `days_back`, `days_ahead`, `max_entries`, `hint`, …). NetBox has no hook for the home page, so the plugin adds the feeds via its `<head>` content and a few lines of JavaScript placed before `#dashboard`; if a NetBox release changes that element, the feeds just do not show.
+
+With `days_back` and `days_ahead` both 0 a feed lists only annotations running now, e.g. region annotations from the rollout of a feature on a test system to its release.
 
 ## Annotation format
 
@@ -114,7 +119,7 @@ The widget shows the first line as title, linked to the dashboard panel, and the
 cd dev && docker compose up -d
 ```
 
-After a minute or two, http://localhost:8000 (login `admin` / `admin`) shows two pinned feeds (maintenance, incidents) above a dashboard with two widgets. `NETBOX_PORT=8080 docker compose up -d` for another port, `docker compose down -v` to clean up. Plugin code changes: `docker compose restart netbox`.
+After a minute or two, http://localhost:8000 (login `admin` / `admin`) shows a message and three pinned feeds above a dashboard with two widgets. `NETBOX_PORT=8080 docker compose up -d` for another port, `docker compose down -v` to clean up. Plugin code changes: `docker compose restart netbox`.
 
 ## Development
 

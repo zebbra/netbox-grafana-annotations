@@ -20,6 +20,7 @@ class GrafanaAnnotationsConfig(PluginConfig):
         "verify_ssl": True,
         "cache_timeout": 300,
         "pinned": [],
+        "pinned_message": "",
     }
 
     def ready(self):

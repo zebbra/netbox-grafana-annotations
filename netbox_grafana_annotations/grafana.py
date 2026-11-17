@@ -97,7 +97,7 @@ def pinned_cards(pinned):
     """Split pinned feed settings into card attributes and widget config."""
     cards = []
     for item in pinned or []:
-        card = {"title": "", "color": "", "width": 4, "height": 4, **{k: item[k] for k in CARD_KEYS if k in item}}
+        card = {"title": "", "color": "", "width": None, "height": 4, **{k: item[k] for k in CARD_KEYS if k in item}}
         card["config"] = {k: v for k, v in item.items() if k not in CARD_KEYS}
         cards.append(card)
     return cards

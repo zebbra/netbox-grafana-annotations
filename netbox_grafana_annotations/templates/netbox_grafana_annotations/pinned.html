@@ -1,16 +1,21 @@
 <template id="nga-pinned">
-  <div class="row g-2 mx-2 mt-2">
-    {% for card in cards %}
-      <div class="col-12 col-lg-{{ card.width }}">
-        <div class="card h-100">
-          <div class="card-header text-bg-{{ card.color|default:"secondary" }} px-2 py-1 justify-content-center">
-            <i class="mdi mdi-pin-outline me-1"></i><span class="fs-4 fw-bold">{{ card.title }}</span>
+  {% if message %}
+    <div class="alert alert-info mx-3 mt-2 mb-0" role="alert">{{ message|markdown }}</div>
+  {% endif %}
+  {% if cards %}
+    <div class="row g-2 mx-2 mt-1">
+      {% for card in cards %}
+        <div class="col-12 {% if card.width %}col-lg-{{ card.width }}{% else %}col-lg{% endif %}">
+          <div class="card h-100">
+            <div class="card-header text-bg-{{ card.color|default:"secondary" }} px-2 py-1 justify-content-center">
+              <i class="mdi mdi-pin-outline me-1"></i><span class="fs-4 fw-bold">{{ card.title }}</span>
+            </div>
+            <div class="card-body p-2 pt-1 overflow-auto" style="max-height: {% widthratio card.height 1 100 %}px">{{ card.body }}</div>
           </div>
-          <div class="card-body p-2 pt-1 overflow-auto" style="max-height: {% widthratio card.height 1 100 %}px">{{ card.body }}</div>
         </div>
-      </div>
-    {% endfor %}
-  </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 </template>
 <script>
   document.addEventListener("DOMContentLoaded", function () {

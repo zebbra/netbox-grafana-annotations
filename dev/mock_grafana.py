@@ -59,6 +59,10 @@ def data():
          "text": "Grafana 13", "data": {"title": "Grafana 13", "summary": "Security update, new panel options.", "url": f"{G}/d/changelog"}},
         {"id": 13, "time": day - 8 * D + 10 * H, "tags": ["changelog", "monitoring", "wifi"],
          "text": "Access point monitoring", "data": {"title": "Access point monitoring", "summary": "All access points with client counts and radio status.", "url": f"{G}/d/changelog"}},
+        # preview: region from rollout on dev to planned release on prod
+        {"id": 31, "time": day - 3 * D + 10 * H, "timeEnd": day + 11 * D + 10 * H, "tags": ["preview", "grafana"],
+         "text": "Grafana 13.3", "data": {"title": "Grafana 13.3", "summary": "New Grafana version, please test on dev.",
+                                          "url": "https://grafana-dev.example.com", "contact": "Platform team"}},
     ]
 
 
