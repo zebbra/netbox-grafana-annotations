@@ -9,7 +9,7 @@ NetBox fetches the annotations server-side (the Grafana token never reaches the 
 ## Install
 
 ```sh
-pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.4.0
+pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.4.1
 ```
 
 ```python
