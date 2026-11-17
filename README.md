@@ -9,7 +9,7 @@ NetBox fetches the annotations server-side (the Grafana token never reaches the 
 ## Install
 
 ```sh
-pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.3.0
+pip install git+https://github.com/zebbra/netbox-grafana-annotations.git@v0.4.0
 ```
 
 ```python
@@ -32,6 +32,7 @@ PLUGINS_CONFIG = {
 | `timeout` | `5` | Request timeout in seconds |
 | `verify_ssl` | `True` | TLS verification for the API call |
 | `cache_timeout` | `300` | Cache lifetime in seconds, `0` disables caching |
+| `pinned` | `[]` | Feeds shown above every user's dashboard, see below |
 
 Proxies follow NetBox's `HTTP_PROXIES`.
 
@@ -49,6 +50,19 @@ Add «Grafana Annotations» on the NetBox dashboard and configure:
 - **Days back** / **Days ahead**: time window around now; e.g. 0/14 for upcoming maintenance, 30/0 for a changelog, 1/14 to keep yesterday's window visible. Ongoing entries come first, then upcoming (soonest first), then past (newest first, dimmed when the window also looks ahead)
 - **Hint**: optional text shown when hovering the info icon, e.g. what the widget lists
 - **Max entries**, **Show tags** (the filter tags themselves are never shown), **Show fields**
+
+## Pinned feeds
+
+Feeds that every user should see, e.g. maintenance and incidents, can be pinned above the dashboard. They come from the configuration, so users cannot remove or change them; the dashboard below stays theirs.
+
+```python
+"pinned": [
+    {"title": "Planned work", "color": "purple", "width": 6, "tags": "maintenance", "days_ahead": 7},
+    {"title": "Incidents", "color": "red", "width": 6, "tags": "incident", "days_back": 5, "hint": "Current cases"},
+],
+```
+
+`title`, `color`, `width` (of 12 columns, default 4) and `height` (max height in units of 100px, default 4) shape the card; every other key is a widget setting as above (`tags`, `days_back`, `days_ahead`, `max_entries`, `hint`, …). NetBox has no hook for the home page, so the plugin adds the feeds via its `<head>` content and a few lines of JavaScript placed before `#dashboard`; if a NetBox release changes that element, the feeds just do not show.
 
 ## Annotation format
 
@@ -100,7 +114,7 @@ The widget shows the first line as title, linked to the dashboard panel, and the
 cd dev && docker compose up -d
 ```
 
-After a minute or two, http://localhost:8000 (login `admin` / `admin`) shows four example widgets. `NETBOX_PORT=8080 docker compose up -d` for another port, `docker compose down -v` to clean up. Plugin code changes: `docker compose restart netbox`.
+After a minute or two, http://localhost:8000 (login `admin` / `admin`) shows two pinned feeds (maintenance, incidents) above a dashboard with two widgets. `NETBOX_PORT=8080 docker compose up -d` for another port, `docker compose down -v` to clean up. Plugin code changes: `docker compose restart netbox`.
 
 ## Development
 

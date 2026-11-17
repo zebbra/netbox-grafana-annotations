@@ -1,6 +1,6 @@
 from netbox.plugins import PluginConfig
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 
 class GrafanaAnnotationsConfig(PluginConfig):
@@ -19,6 +19,7 @@ class GrafanaAnnotationsConfig(PluginConfig):
         "timeout": 5,
         "verify_ssl": True,
         "cache_timeout": 300,
+        "pinned": [],
     }
 
     def ready(self):

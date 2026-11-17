@@ -1,4 +1,4 @@
-"""Dashboard of user admin with four example widgets (run via the seed service)."""
+"""Dashboard of user admin with two example widgets (maintenance and incidents are pinned in configuration.py) (run via the seed service)."""
 from extras.models import Dashboard
 from users.models import User
 
@@ -13,12 +13,10 @@ def config(tags, back, ahead, entries=5, fields=True, hint=""):
 
 
 widgets = [
-    ("Maintenance", "pink", config("maintenance", 1, 14, hint="Maintenance windows: yesterday, ongoing and planned")),
     ("Changelog", "purple", config("changelog", 30, 0, hint="What changed in NetBox, Grafana and monitoring")),
-    ("Current T3 Investigations", "red", config("incident,tier3", 7, 0, hint="These are current Problem/Incident cases from the desk")),
     ("Past maintenance", "gray", config("maintenance", 30, 0, entries=10, fields=False)),
 ]
-ids = [f"{i}{i}{i}{i}{i}{i}{i}{i}-{i}{i}{i}{i}-4{i}{i}{i}-8{i}{i}{i}-{i * 12}" for i in "1234"]
+ids = [f"{i}{i}{i}{i}{i}{i}{i}{i}-{i}{i}{i}{i}-4{i}{i}{i}-8{i}{i}{i}-{i * 12}" for i in "12"]
 layout = [
     {"id": wid, "x": 6 * (n % 2), "y": 5 * (n // 2), "w": 6, "h": 5}
     for n, wid in enumerate(ids)

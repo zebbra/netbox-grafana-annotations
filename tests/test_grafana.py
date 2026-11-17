@@ -86,3 +86,14 @@ def test_parts_links():
         {"text": "https://x.example/a", "url": "https://x.example/a"},
         {"text": " and text", "url": None},
     ]
+
+
+def test_pinned_cards():
+    cards = grafana.pinned_cards([
+        {"title": "Planned", "color": "purple", "tags": "maintenance", "days_ahead": 7},
+        {"tags": "incident", "width": 6},
+    ])
+    assert cards[0] == {"title": "Planned", "color": "purple", "width": 4, "height": 4,
+                        "config": {"tags": "maintenance", "days_ahead": 7}}
+    assert cards[1]["width"] == 6 and cards[1]["config"] == {"tags": "incident"}
+    assert grafana.pinned_cards(None) == []
